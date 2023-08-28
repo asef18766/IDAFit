@@ -418,7 +418,7 @@ void handle_input(Joycon *jc, uint8_t *packet, int len)
 
 			if (Ringcon != prevRingcon)
 			{
-				printf("%i\n", Ringcon);
+				//printf("%i\n", Ringcon);
 			}
 
 			if (settings.RingconFullRH)
@@ -520,6 +520,7 @@ void handle_input(Joycon *jc, uint8_t *packet, int len)
 			}
 
 			prevRingcon = Ringcon;
+			jc->ringcon = Ringcon;
 			// printf("%i \n\n", Ringcon);
 		}
 
@@ -1689,7 +1690,18 @@ extern "C"
 		atexit(actuallyQuit); // prevent broke next use
 	}
 	
-	__declspec(dllexport) void poll_ringcon()
+	
+	//#pragma pack(push)
+	//#pragma pack(1)
+	struct pool_ret_data {
+		bool running;
+		bool squatting;
+
+		int ringcon_pushval;
+	};
+	//#pragma pack(pop)
+
+	__declspec(dllexport) void poll_ringcon(pool_ret_data *ret)
 	{
 		pollLoop();
 		static int ringcon_index = -1;
@@ -1700,12 +1712,12 @@ extern "C"
 				if (joycons[i].name == "Joy-Con (R)")
 				{
 					ringcon_index = i;
-					std::cout << "[ringcon index:" << i << "]\n";
+					//std::cout << "[ringcon index:" << i << "]\n";
 				}
 				else if (joycons[i].name == "Joy-Con (L)")
 				{
 					leg_joycon_index = i;
-					std::cout << "[leg_joycon index:" << i << "]\n";
+					//std::cout << "[leg_joycon index:" << i << "]\n";
 				}
 			}
 		
@@ -1715,14 +1727,10 @@ extern "C"
 		auto &ringcon = joycons[ringcon_index];
 		auto &leg_joycon = joycons[leg_joycon_index];
 		
-		if (leg_joycon.squatting)
-		{
-			printf("s: %f\n", leg_joycon.accel.z);
-		}
-		else
-		{
-			printf("ns: %f\n", leg_joycon.accel.z);
-		}
+		
+		ret->running = leg_joycon.running;
+		ret->squatting = leg_joycon.squatting;
+		ret->ringcon_pushval = ringcon.ringcon;
 	}
 	/*
 	__declspec(dllexport) void start_daemon()

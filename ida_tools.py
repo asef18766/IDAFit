@@ -62,13 +62,13 @@ def create_ida_rpc_server():
     global server
     global server_thread
     server = SimpleXMLRPCServer((IDA_RPC_HOST, IDA_RPC_PORT), logRequests=True, allow_none=True)
+    
+    server.register_function(wrap(move_instr_cur), "move_instr_cur")
+    server.register_function(wrap(nav_back), "nav_back")
+    server.register_function(wrap(nav_step_in), "nav_step_in")
+    server.register_function(wrap(decompile_func), "decompile_func")
+    
     server.register_introspection_functions()
-    
-    server.register_function(wrap(move_instr_cur))
-    server.register_function(wrap(nav_back))
-    server.register_function(wrap(nav_step_in))
-    server.register_function(wrap(decompile_func))
-    
 
     print('IDA Pro xmlrpc hosted on http://%s:%s' % (IDA_RPC_HOST, IDA_RPC_PORT))
     print('Call `del_ida_rpc_server()` to shutdown the IDA Pro xmlrpc server.')
